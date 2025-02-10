@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract SafeVault is Initializable {
-
+contract SafeVault is OwnableUpgradeable {
     uint256 public lastAccessTime;
 
-    event UnlockVault(uint256 timestamp);
+    event UnlockVaultSignal(uint256 timestamp);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -21,6 +19,6 @@ contract SafeVault is Initializable {
 
     function UnlockVault() external onlyOwner {
         lastAccessTime = block.timestamp;
-        emit UnlockVault(lastAccessTime);
+        emit UnlockVaultSignal(lastAccessTime);
     }
 }

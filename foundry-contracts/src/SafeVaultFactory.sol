@@ -7,7 +7,7 @@ import "./SafeVault.sol";
 contract SafeVaultFactory {
     address public immutable implementation;
 
-    event CreatedVault(address vault, address owner);
+    event CreatedVault(address vault, uint256 timestamp);
 
     constructor() {
         implementation = address(new SafeVault());

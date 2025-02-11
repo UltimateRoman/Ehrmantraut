@@ -1,6 +1,6 @@
 {
   "name": "Ehrmantraut",
-  "plugins": [],
+  "plugins": ["@ehrmantraut/plugin-safe"],
   "clients": ["telegram"],
   "modelProvider": "openai",
   "settings": {

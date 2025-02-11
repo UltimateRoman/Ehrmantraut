@@ -1,0 +1,37 @@
+{
+    "name": "@ehrmantraut/plugin-safe",
+    "version": "0.25.6-build.1",
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "dependencies": {
+        "@elizaos/core": "0.1.9",
+        "cive": "0.7.1"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "1.9.4",
+        "tsup": "8.3.5",
+        "zod": "3.22.4"
+    },
+    "scripts": {
+        "build": "tsup --format esm --dts",
+        "dev": "tsup --format esm --dts --watch",
+        "lint": "eslint --fix --cache"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}

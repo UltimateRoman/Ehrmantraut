@@ -22,7 +22,7 @@ import {
   parseArguments,
 } from "./config/index.ts";
 import { initializeDatabase } from "./database/index.ts";
-
+import {defaultCharacter} from "../characters/nasa.character.ts"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -130,9 +130,9 @@ const startAgents = async () => {
   const args = parseArguments();
 
   let charactersArg = args.characters || args.character;
-  let characters = [character];
+  let characters = [defaultCharacter];
 
-  console.log("charactersArg", charactersArg);
+  console.log("defaultCharacter", defaultCharacter);
   if (charactersArg) {
     characters = await loadCharacters(charactersArg);
   }

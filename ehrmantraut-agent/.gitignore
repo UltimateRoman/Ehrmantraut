@@ -1,5 +1,6 @@
 *.ts
 dist
+!src/safe/*
 !index.ts
 !character.ts
 .env

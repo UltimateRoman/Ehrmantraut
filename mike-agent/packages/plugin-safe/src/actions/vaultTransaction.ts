@@ -36,10 +36,12 @@ export const vaultTransaction: Action = {
         const safeAddress = config.SAFE_ADDRESS;
         const agentAddress = config.AGENT_ADDRESS;
         const contractAddress = config.CONTRACT_ADDRESS;
-        // Fix typo in variable name
         const agentPrivateKey = config.AGENT_PRIVATE_KEY;
-        elizaLogger.info("Executing safe transaction");
-        const proposedTransaction = await createTransaction(agentAddress,agentPrivateKey,safeAddress, contractAddress);
+        const evmProviderUrl = config.EVM_PROVIDER_URL;
+
+        elizaLogger.info("Creating safe transaction");
+
+        const proposedTransaction = await createTransaction(agentAddress, agentPrivateKey, safeAddress, contractAddress, evmProviderUrl);
         try {
             
             elizaLogger.success('Successfull');
@@ -53,14 +55,14 @@ export const vaultTransaction: Action = {
                 );
             }
         } catch (error) {
-            elizaLogger.error("Error executing transaction :", error);
+            elizaLogger.error("Error creating safe transaction :", error);
             if (!callback) {
                 return;
             }
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             callback(
                 {
-                    text: `Failed to executing transaction: ${errorMessage}`,
+                    text: `Failed to create safe transaction: ${errorMessage}`,
                     error: errorMessage,
                 },
                 []

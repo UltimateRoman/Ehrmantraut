@@ -6,6 +6,7 @@ export const safeEnvSchema = z.object({
     SAFE_ADDRESS: z.string().min(1, "SAFE_ADDRESS is required"),
     AGENT_ADDRESS: z.string().min(1, "AGENT_ADDRESS is required"),
     CONTRACT_ADDRESS: z.string().min(1, "CONTRACT_ADDRESS is required"),
+    EVM_PROVIDER_URL: z.string().min(1, "EVM_PROVIDER_URL is required")
 });
 
 export type safeConfig = z.infer<typeof safeEnvSchema>;
@@ -27,6 +28,9 @@ export async function validateSafeConfig(
             CONTRACT_ADDRESS:
                 runtime.getSetting("CONTRACT_ADDRESS") ||
                 process.env.CONTRACT_ADDRESS,
+            EVM_PROVIDER_URL:
+                runtime.getSetting("EVM_PROVIDER_URL") ||
+                process.env.EVM_PROVIDER_URL
         };
 
         return safeEnvSchema.parse(config);
@@ -36,7 +40,7 @@ export async function validateSafeConfig(
                 .map((err) => `${err.path.join(".")}: ${err.message}`)
                 .join("\n");
             throw new Error(
-                `Safe tranasaction configuration validation failed:\n${errorMessages}`
+                `Safe transaction configuration validation failed:\n${errorMessages}`
             );
         }
         throw error;

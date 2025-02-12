@@ -23,7 +23,7 @@ export class AutoClient {
 
         provider.getBlockNumber()
             .then((blockNumber) => {
-                elizaLogger.info("AutoClient", `Current block: ${blockNumber}`);
+                elizaLogger.info("AutoClient", `Listener current block: ${blockNumber}`);
                 this.lastProcessedBlock = blockNumber - 1;
             });
     }
@@ -35,7 +35,7 @@ export class AutoClient {
 
             events.forEach((event) => {
                 if (event.blockNumber > this.lastProcessedBlock + 1) {
-                    elizaLogger.info("AutoClient", `Event received: ${JSON.stringify(event)}`);
+                    elizaLogger.info("AutoClient", `Unlock event received`);
                     this.lastProcessedBlock = event.blockNumber - 1;
                 }
             });

@@ -1,5 +1,5 @@
 {
-    "name": "@ehrmantraut/plugin-safe",
+    "name": "@mike/plugin-safe",
     "version": "0.25.6-build.1",
     "type": "module",
     "main": "dist/index.js",

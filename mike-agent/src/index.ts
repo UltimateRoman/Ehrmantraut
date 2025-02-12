@@ -13,7 +13,6 @@ import net from "net";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initializeDbCache } from "./cache/index.ts";
-import { character } from "./character.ts";
 import { startChat } from "./chat/index.ts";
 import { initializeClients } from "./clients/index.ts";
 import {
@@ -22,7 +21,7 @@ import {
   parseArguments,
 } from "./config/index.ts";
 import { initializeDatabase } from "./database/index.ts";
-import {defaultCharacter} from "../characters/safe.character.ts"
+import { defaultCharacter } from "../characters/mike.character.ts"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

@@ -1,4 +1,3 @@
-*.ts
 dist
 !src/safe/*
 !index.ts

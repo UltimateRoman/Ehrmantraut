@@ -1,4 +1,4 @@
-import { AutoClientInterface } from "@elizaos/client-auto";
+import { AutoClientInterface } from "../custom-clients/index.ts";
 import { TelegramClientInterface } from "@elizaos/client-telegram";
 import { Character, IAgentRuntime } from "@elizaos/core";
 

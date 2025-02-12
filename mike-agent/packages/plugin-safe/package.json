@@ -19,7 +19,12 @@
     ],
     "dependencies": {
         "@elizaos/core": "0.1.9",
-        "cive": "0.7.1"
+        "cive": "0.7.1",
+        "punycode": "^2.3.1",
+        "whatwg-url": "^14.1.1",
+        "@safe-global/api-kit": "^2.5.9",
+        "@safe-global/protocol-kit": "^5.2.2",
+        "@safe-global/types-kit": "^1.0.2"
     },
     "devDependencies": {
         "@biomejs/biome": "1.9.4",

@@ -22,7 +22,7 @@ import {
   parseArguments,
 } from "./config/index.ts";
 import { initializeDatabase } from "./database/index.ts";
-import {defaultCharacter} from "../characters/nasa.character.ts"
+import {defaultCharacter} from "../characters/safe.character.ts"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

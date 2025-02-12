@@ -12,12 +12,15 @@ import { validateSafeConfig } from "../environment";
 import { vaultTransactions } from "../examples";
 
 export const vaultTransaction: Action = {
-    name: "NASA Mars photos",
+    name: "Safe transaction",
     similes : [
-        "Mars",
-        "Martian"
+        "Safe Wallet",
+        "Safe",
+        "Safe transaction",
+        "Safe Vault",
+        "Transaction with safe"
     ],
-    description: "Get random mars photo",
+    description: "Propose a transaction with safe",
     validate: async (runtime: IAgentRuntime) => {
         await validateSafeConfig(runtime);
         return true;
@@ -30,28 +33,34 @@ export const vaultTransaction: Action = {
         callback?: HandlerCallback
     ) => {
         const config = await validateSafeConfig(runtime);
-        const nasaService = createTransaction(config.NasaAPIKey);
+        const safeAddress = config.SAFE_ADDRESS;
+        const agentAddress = config.AGENT_ADDRESS;
+        const contractAddress = config.CONTRACT_ADDRESS;
+        // Fix typo in variable name
+        const agentPrivateKey = config.AGENT_PRIVATE_KEY;
+        elizaLogger.info("Executing safe transaction");
+        const proposedTransaction = await createTransaction(agentAddress,agentPrivateKey,safeAddress, contractAddress);
         try {
-            const MarsData = await nasaService.getAPOD();
+            
             elizaLogger.success('Successfull');
             if (callback) {
                 callback(
                     {
-                        text: `Here's a Mars photo: ${MarsData.explanation} and ${MarsData}`,
+                        text: `Transaction for safe vault: ${proposedTransaction}`,
                         action: "NASA Mars photos",
                     },
                     []
                 );
             }
         } catch (error) {
-            elizaLogger.error("Error getting Mars photo:", error);
+            elizaLogger.error("Error executing transaction :", error);
             if (!callback) {
                 return;
             }
             const errorMessage = error instanceof Error ? error.message : "Unknown error";
             callback(
                 {
-                    text: `Failed to get Mars photo: ${errorMessage}`,
+                    text: `Failed to executing transaction: ${errorMessage}`,
                     error: errorMessage,
                 },
                 []

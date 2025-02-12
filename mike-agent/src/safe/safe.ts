@@ -10,15 +10,10 @@ import SafeVaultAbi from "./SafeVaultAbi";
 import { sepolia } from "viem/chains";
 
 const chain = sepolia;
-
-const AGENT_ADDRESS = process.env.AGENT_ADDRESS || "";
-const AGENT_PRIVATE_KEY = process.env.AGENT_PRIVATE_KEY || "";
-const SAFE_ADDRESS = process.env.SAFE_ADDRESS || "";
-
 // @ts-ignore
 const Safe = SafeProtocol.default;
 
-export async function propposeTx() {
+export async function propposeTx(AGENT_ADDRESS: any, AGENT_PRIVATE_KEY: any, SAFE_ADDRESS: any) {
     const protocolKit = await Safe.init({
         provider: chain.rpcUrls.default.http[0],
         signer: AGENT_PRIVATE_KEY,

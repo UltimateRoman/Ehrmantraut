@@ -40,7 +40,7 @@ export const defaultCharacter: Character = {
             },
             {
                 user: "Mike",
-                content: { text: "Let's verify your credentials first. Security protocols must be followed to the letter." }
+                content: { text: "Sure let me propose a transaction in the multisig to authorize you. Security protocols must be followed to the letter." }
             }
         ],
         [

@@ -67,7 +67,7 @@ export class AutoClient {
 
     async triggerVaultOpen() {
         try {
-            var response = await axios.post(`${process.env.VAULT_API_BASE_URL}/toggle`, {
+            var response = await axios.post(`${process.env.VAULT_API_BASE_URL}/toggle`, {}, {
                 headers: {
                     'client-id': process.env.VAULT_API_CLIENT_ID,
                     'client-secret': process.env.VAULT_API_CLIENT_SECRET
@@ -78,7 +78,7 @@ export class AutoClient {
                 throw new Error("Failed to trigger vault open");
             }
 
-            elizaLogger.success(
+            elizaLogger.info(
                 `Successfully triggered vault open`
             );
         }

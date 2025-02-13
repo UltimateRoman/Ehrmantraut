@@ -49,9 +49,14 @@ export class AutoClient {
 
     async checkSensorData() {
         try {
-            var response = await axios.get(`${process.env.VAULT_API_URL}/motion`);
+            var response = await axios.get(`${process.env.VAULT_API_BASE_URL}/motion`, {
+                headers: {
+                    'client-id': process.env.VAULT_API_CLIENT_ID,
+                    'client-secret': process.env.VAULT_API_CLIENT_SECRET
+                }
+            });
 
-            if (response.data.motion === "true") {
+            if (response?.data?.motion === true) {
                 elizaLogger.info("AutoClient", `Vault unlock detected`);
             }
         }
@@ -62,9 +67,14 @@ export class AutoClient {
 
     async triggerVaultOpen() {
         try {
-            var response = await axios.get(`${process.env.VAULT_API_URL}/toggle`);
+            var response = await axios.post(`${process.env.VAULT_API_BASE_URL}/toggle`, {
+                headers: {
+                    'client-id': process.env.VAULT_API_CLIENT_ID,
+                    'client-secret': process.env.VAULT_API_CLIENT_SECRET
+                }
+            });
 
-            if (response.data.status !== "success") {
+            if (response?.data?.status !== "success") {
                 throw new Error("Failed to trigger vault open");
             }
 

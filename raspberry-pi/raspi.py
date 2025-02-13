@@ -1,87 +1,96 @@
-from fastapi import FastAPI
 import RPi.GPIO as GPIO
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi import Depends, HTTPException, Header
+from fastapi.security import OAuth2PasswordBearer
 import time
+import threading
 
-SERVO_PIN = 18  # GPIO for Servo
-TRIG_PIN = 23  # GPIO for Ultrasonic Sensor TRIG
-ECHO_PIN = 24  # GPIO for Ultrasonic Sensor ECHO
-LDR_PIN = 12  # GPIO for LDR Sensor
-
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-
-GPIO.setup(SERVO_PIN, GPIO.OUT)
-GPIO.setup(TRIG_PIN, GPIO.OUT)
-GPIO.setup(ECHO_PIN, GPIO.IN)
-
-pwm = GPIO.PWM(SERVO_PIN, 50)  # 50Hz frequency
-pwm.start(0)
-
-OPEN_ANGLE = 10
-CLOSED_ANGLE = 105
-door_state = "closed"
 
 app = FastAPI()
 
-print("Starting FastAPI server...")
+GPIO.cleanup()
+GPIO.setmode(GPIO.BCM)
 
-def set_servo_angle(angle):
-    """ Move servo to a specific angle """
-    duty_cycle = angle / 18 + 2
-    pwm.ChangeDutyCycle(duty_cycle)
-    time.sleep(0.5)
-    pwm.ChangeDutyCycle(0)
+STEP_PIN_1 = 27
+STEP_PIN_2 = 22
+STEP_PIN_3 = 5
+STEP_PIN_4 = 6
+PIR_PIN = 17
 
-def read_ldr():
-    """ Returns 'dark' if LDR sees low light, otherwise 'bright' """
-    GPIO.setup(LDR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    light = GPIO.input(LDR_PIN) 
-    return "dark" if light else "bright"
+GPIO.setup(STEP_PIN_1, GPIO.OUT)
+GPIO.setup(STEP_PIN_2, GPIO.OUT)
+GPIO.setup(STEP_PIN_3, GPIO.OUT)
+GPIO.setup(STEP_PIN_4, GPIO.OUT)
+GPIO.setup(PIR_PIN, GPIO.IN)
 
-def get_distance():
-    """ Measure distance using ultrasonic sensor """
-    GPIO.output(TRIG_PIN, True)
-    time.sleep(0.00001)
-    GPIO.output(TRIG_PIN, False)
-    start_time, end_time = 0, 0
-    # Wait for ECHO to go HIGH
-    while GPIO.input(ECHO_PIN) == 0:
-        start_time = time.time()
-    # Wait for ECHO to go LOW
-    while GPIO.input(ECHO_PIN) == 1:
-        end_time = time.time()
-    elapsed_time = end_time - start_time
-    distance = (elapsed_time * 34300) / 2
-    return round(distance, 2)
+step_sequence = [
+    [1, 0, 0, 0],
+    [1, 1, 0, 0],
+    [0, 1, 0, 0],
+    [0, 1, 1, 0],
+    [0, 0, 1, 0],
+    [0, 0, 1, 1],
+    [0, 0, 0, 1],
+    [1, 0, 0, 1]
+]
 
-@app.get("/toggle")
-async def toggle_door():
-    global door_state
-    if door_state == "closed":
-        set_servo_angle(OPEN_ANGLE)
-        door_state = "open"
+motion_detected = False
+
+def move_stepper(steps):
+    """Function to move stepper motor"""
+    if steps > 0:
+        for _ in range(steps):
+            for step in step_sequence:
+                GPIO.output(STEP_PIN_1, step[0])
+                GPIO.output(STEP_PIN_2, step[1])
+                GPIO.output(STEP_PIN_3, step[2])
+                GPIO.output(STEP_PIN_4, step[3])
+                time.sleep(0.005)
     else:
-        set_servo_angle(CLOSED_ANGLE)
-        door_state = "closed"
-    return {"status": "success", "door": door_state}
+        steps = abs(steps)
+        for _ in range(steps):
+            for step in reversed(step_sequence):
+                GPIO.output(STEP_PIN_1, step[0])
+                GPIO.output(STEP_PIN_2, step[1])
+                GPIO.output(STEP_PIN_3, step[2])
+                GPIO.output(STEP_PIN_4, step[3])
+                time.sleep(0.005)
 
-@app.get("/status")
-async def get_status():
-    return {"door": door_state}
+def rotate_motor():
+    print("Rotating motor 90 degrees.")
+    move_stepper(128)
 
-@app.get("/distance")
-async def check_distance():
-    """ API to check ultrasonic sensor distance """
-    distance = get_distance()
-    return {"distance_cm": distance}
+    time.sleep(5)
 
-@app.get("/ldr")
-async def check_ldr():
-    """ API to check light status (bright or dark) """
-    light_value = read_ldr()
-    return {"light_value": light_value}
+    print("Rotating motor back to original position.")
+    move_stepper(-128)
 
-@app.on_event("shutdown")
-def cleanup():
-    pwm.stop()
-    GPIO.cleanup()
+
+CLIENT_ID = ""
+CLIENT_SECRET = ""
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+def verify_client_credentials(client_id: str = Header(...), client_secret: str = Header(...)):
+    """Verify if the client credentials are correct"""
+    if client_id != CLIENT_ID or client_secret != CLIENT_SECRET:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return True
+
+@app.get("/motion")
+async def get_motion_status(client_valid: bool = Depends(verify_client_credentials)):
+    """Endpoint to get the current status of the motion sensor"""
+    if GPIO.input(PIR_PIN):
+        return JSONResponse(content={"motion": True}, status_code=200)
+    else:
+        return JSONResponse(content={"motion": False}, status_code=200)
+
+@app.post("/toggle")
+async def trigger_motor(client_valid: bool = Depends(verify_client_credentials)):
+    """Endpoint to trigger the motor to rotate"""
+    motor_thread = threading.Thread(target=rotate_motor)
+    motor_thread.start()
+
+    return JSONResponse(content={"status": "success"}, status_code=200)

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import {Script} from "forge-std/Script.sol";
-import {console2} from "forge-std/Test.sol";
-import {HelloWorldDeploymentLib} from "./utils/HelloWorldDeploymentLib.sol";
+import { Script } from "forge-std/Script.sol";
+import { console2 } from "forge-std/Test.sol";
+import { SafeVaultDeploymentLib } from "./utils/SafeVaultDeploymentLib.sol";
 import {CoreDeploymentLib} from "./utils/CoreDeploymentLib.sol";
 import {UpgradeableProxyLib} from "./utils/UpgradeableProxyLib.sol";
 import {StrategyBase} from "@eigenlayer/contracts/strategies/StrategyBase.sol";
@@ -24,7 +24,7 @@ import {
 
 import "forge-std/Test.sol";
 
-contract HelloWorldDeployer is Script, Test {
+contract SafeVaultDeployer is Script, Test {
     using CoreDeploymentLib for *;
     using UpgradeableProxyLib for address;
 
@@ -32,17 +32,17 @@ contract HelloWorldDeployer is Script, Test {
     address proxyAdmin;
     address rewardsOwner;
     address rewardsInitiator;
-    IStrategy helloWorldStrategy;
+    IStrategy safeVaultStrategy;
     CoreDeploymentLib.DeploymentData coreDeployment;
-    HelloWorldDeploymentLib.DeploymentData helloWorldDeployment;
-    HelloWorldDeploymentLib.DeploymentConfigData helloWorldConfig;
+    SafeVaultDeploymentLib.DeploymentData safeVaultDeployment;
+    SafeVaultDeploymentLib.DeploymentConfigData safeVaultConfig;
     Quorum internal quorum;
     ERC20Mock token;
     function setUp() public virtual {
         deployer = vm.rememberKey(vm.envUint("PRIVATE_KEY"));
         vm.label(deployer, "Deployer");
 
-        helloWorldConfig = HelloWorldDeploymentLib.readDeploymentConfigValues("config/hello-world/", block.chainid);
+        safeVaultConfig = SafeVaultDeploymentLib.readDeploymentConfigValues("config/safe-vault/", block.chainid);
 
 
         coreDeployment = CoreDeploymentLib.readDeploymentJson("deployments/core/", block.chainid);
@@ -50,41 +50,41 @@ contract HelloWorldDeployer is Script, Test {
 
     function run() external {
         vm.startBroadcast(deployer);
-        rewardsOwner = helloWorldConfig.rewardsOwner;
-        rewardsInitiator = helloWorldConfig.rewardsInitiator;
+        rewardsOwner = safeVaultConfig.rewardsOwner;
+        rewardsInitiator = safeVaultConfig.rewardsInitiator;
 
         token = new ERC20Mock();
-        helloWorldStrategy = IStrategy(StrategyFactory(coreDeployment.strategyFactory).deployNewStrategy(token));
+        safeVaultStrategy = IStrategy(StrategyFactory(coreDeployment.strategyFactory).deployNewStrategy(token));
 
 
         quorum.strategies.push(
-            StrategyParams({strategy: helloWorldStrategy, multiplier: 10_000})
+            StrategyParams({strategy: safeVaultStrategy, multiplier: 10_000})
         );
 
 
         proxyAdmin = UpgradeableProxyLib.deployProxyAdmin();
 
 
-        helloWorldDeployment =
-            HelloWorldDeploymentLib.deployContracts(proxyAdmin, coreDeployment, quorum, rewardsInitiator, rewardsOwner);
+        safeVaultDeployment =
+            SafeVaultDeploymentLib.deployContracts(proxyAdmin, coreDeployment, quorum, rewardsInitiator, rewardsOwner);
 
-        helloWorldDeployment.strategy = address(helloWorldStrategy);
-        helloWorldDeployment.token = address(token);
+        safeVaultDeployment.strategy = address(safeVaultStrategy);
+        safeVaultDeployment.token = address(token);
 
         vm.stopBroadcast();
         verifyDeployment();
-        HelloWorldDeploymentLib.writeDeploymentJson(helloWorldDeployment);
+        SafeVaultDeploymentLib.writeDeploymentJson(safeVaultDeployment);
     }
 
     function verifyDeployment() internal view {
         require(
-            helloWorldDeployment.stakeRegistry != address(0), "StakeRegistry address cannot be zero"
+            safeVaultDeployment.stakeRegistry != address(0), "StakeRegistry address cannot be zero"
         );
         require(
-            helloWorldDeployment.helloWorldServiceManager != address(0),
-            "HelloWorldServiceManager address cannot be zero"
+            safeVaultDeployment.safeVaultServiceManager != address(0),
+            "SafeVaultServiceManager address cannot be zero"
         );
-        require(helloWorldDeployment.strategy != address(0), "Strategy address cannot be zero");
+        require(safeVaultDeployment.strategy != address(0), "Strategy address cannot be zero");
         require(proxyAdmin != address(0), "ProxyAdmin address cannot be zero");
         require(
             coreDeployment.delegationManager != address(0),

@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start:operator": "ts-node operator/index.ts",
-    "start:traffic": "ts-node operator/createNewTasks.ts",
+    "start:api": "ts-node operator/taskApi.ts",
     "start:anvil": "anvil",
     "start:anvil-quick": "anvil --block-time 0.01",
     "deploy:core": "cd contracts && forge script script/DeployEigenLayerCore.s.sol --rpc-url http://localhost:8545 --broadcast --optimize --optimizer-runs 200 --via-ir",
@@ -19,8 +19,11 @@
     "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" npx jest"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^10.0.0",
-    "ethers": "^6.13.2"
+    "ethers": "^6.13.2",
+    "express": "^4.17.1",
+    "snarkjs": "^0.7.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.13",

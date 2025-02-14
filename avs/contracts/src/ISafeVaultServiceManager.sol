@@ -7,7 +7,7 @@ interface ISafeVaultServiceManager {
     event TaskResponded(uint32 indexed taskIndex, Task task, address operator);
 
     struct Task {
-        string name;
+        string proof;
         uint32 taskCreatedBlock;
     }
 
@@ -23,7 +23,7 @@ interface ISafeVaultServiceManager {
     ) external view returns (bytes memory);
 
     function createNewTask(
-        string memory name
+        string memory proof
     ) external returns (Task memory);
 
     function respondToTask(

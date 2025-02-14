@@ -51,10 +51,10 @@ contract SafeVaultServiceManager is ECDSAServiceManagerBase, ISafeVaultServiceMa
     }
 
     function createNewTask(
-        string memory name
+        string memory proof
     ) external returns (Task memory) {
         Task memory newTask;
-        newTask.name = name;
+        newTask.proof = proof;
         newTask.taskCreatedBlock = uint32(block.number);
 
         allTaskHashes[latestTaskNum] = keccak256(abi.encode(newTask));
@@ -78,7 +78,7 @@ contract SafeVaultServiceManager is ECDSAServiceManagerBase, ISafeVaultServiceMa
             "Operator has already responded to the task"
         );
 
-        bytes32 messageHash = keccak256(abi.encodePacked("Hello, ", task.name));
+        bytes32 messageHash = keccak256(abi.encodePacked(task.proof));
         bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();
         bytes4 magicValue = IERC1271Upgradeable.isValidSignature.selector;
         if (!(magicValue == ECDSAStakeRegistry(stakeRegistry).isValidSignature(ethSignedMessageHash,signature))){

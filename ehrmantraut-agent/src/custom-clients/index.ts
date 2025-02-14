@@ -2,6 +2,9 @@ import { type Client, type IAgentRuntime, elizaLogger } from "@elizaos/core";
 import { ethers } from "ethers";
 import { safeVaultABI } from "./abi.ts";
 import axios from "axios";
+import { buildPoseidonOpt } from 'circomlibjs';
+import { groth16 } from '../../node_modules/snarkjs/main.js';
+
 
 export class AutoClient {
     interval: NodeJS.Timeout;
@@ -18,10 +21,12 @@ export class AutoClient {
         this.interval = setInterval(
             async () => {
                 await this.checkForEvents();
-                await this.checkSensorData();
+                //await this.checkSensorData();
             },
             5000
         );
+
+        this.generateAndSendProof("0x337d8554e70c4cebc04ca02bebeae46519fbfed03ffa7b362d6d5a335292739a");
 
         provider.getBlockNumber()
             .then((blockNumber) => {
@@ -35,11 +40,12 @@ export class AutoClient {
             const filter = this.contract.filters.UnlockVaultSignal();
             const events = await this.contract.queryFilter(filter, this.lastProcessedBlock);
 
-            events.forEach((event) => {
+            events.forEach(async (event) => {
                 if (event.blockNumber > this.lastProcessedBlock + 1) {
                     elizaLogger.info("AutoClient", `Unlock event received`);
                     this.triggerVaultOpen();
                     this.lastProcessedBlock = event.blockNumber - 1;
+                    await this.generateAndSendProof(event.transactionHash);
                 }
             });
         } catch (error) {
@@ -84,6 +90,46 @@ export class AutoClient {
         }
         catch (error) {
             elizaLogger.error("AutoClient", `Error triggering vault open: ${error.message}`);
+        }
+    }
+
+    async generateAndSendProof(txHash: string) {
+        try {
+            const poseidon = await buildPoseidonOpt();
+            const timestamp = Math.floor(Date.now() / 1000);
+            const poseidonHash = poseidon([txHash, timestamp]);
+            const hash = poseidon.F.toString(poseidonHash);
+
+            const { proof, publicSignals } = await groth16.fullProve(
+                {
+                    currentTimestamp: timestamp,
+                    poseidonHashResult: hash,
+                    txHash: txHash,
+                    originalTimestamp: timestamp
+                },
+                "src/custom-clients/circuit.wasm", 
+                "src/custom-clients/circuit_0001.zkey"
+            );
+
+            const proofData = {
+                proof: JSON.stringify(proof),
+                publicSignals: publicSignals
+            };
+
+            elizaLogger.info("AutoClient", `Generated proof: ${JSON.stringify(proofData)}`);
+
+            var response = await axios.post(`${process.env.AVS_OPERATOR_URL}/task`, proofData);
+
+            if (response?.data?.success !== true) {
+                throw new Error("Failed to send proof");
+            }
+
+            elizaLogger.info(
+                `Successfully sent proof to operator`
+            );
+        }
+        catch (error) {
+            elizaLogger.error("AutoClient", `Error generating proof: ${error.message}`);
         }
     }
 }

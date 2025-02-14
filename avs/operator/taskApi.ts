@@ -150,7 +150,7 @@ app.post('/task', async (req: any, res: any) => {
 
         console.log('ZK proof received is valid');
 
-        const txHash = await createNewTask(JSON.stringify(proof));
+        const txHash = await createNewTask(proof);
 
         return res.status(200).json({ 
             success: true,

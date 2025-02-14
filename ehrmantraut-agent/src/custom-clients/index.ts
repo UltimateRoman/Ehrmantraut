@@ -21,12 +21,10 @@ export class AutoClient {
         this.interval = setInterval(
             async () => {
                 await this.checkForEvents();
-                //await this.checkSensorData();
+                await this.checkSensorData();
             },
             5000
         );
-
-        this.generateAndSendProof("0x337d8554e70c4cebc04ca02bebeae46519fbfed03ffa7b362d6d5a335292739a");
 
         provider.getBlockNumber()
             .then((blockNumber) => {
@@ -116,7 +114,7 @@ export class AutoClient {
                 publicSignals: publicSignals
             };
 
-            elizaLogger.info("AutoClient", `Generated proof: ${JSON.stringify(proofData)}`);
+            elizaLogger.info("AutoClient", `Generated ZK proof: ${JSON.stringify(proofData)}`);
 
             var response = await axios.post(`${process.env.AVS_OPERATOR_URL}/task`, proofData);
 

@@ -105,7 +105,8 @@ const registerOperator = async () => {
 
 const monitorNewTasks = async () => {
     safeVaultServiceManager.on("NewTaskCreated", async (taskIndex: number, task: any) => {
-        await signAndRespondToTask(taskIndex, task.taskCreatedBlock, task.proof.toString());
+        console.log(`New task detected with ZK proof: ${task.name}`);
+        await signAndRespondToTask(taskIndex, task.taskCreatedBlock, task.name);
     });
 
     console.log("Monitoring for new tasks...");
